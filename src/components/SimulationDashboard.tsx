@@ -2,10 +2,12 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ResourceUtilizationChart from "@/components/charts/ResourceUtilizationChart";
 import SchedulingTimeChart from "@/components/charts/SchedulingTimeChart";
 import MakespanChart from "@/components/charts/MakespanChart";
 import EnergyConsumptionChart from "@/components/charts/EnergyConsumptionChart";
+import ScientificAnalysis from "@/components/ScientificAnalysis";
 import { runSimulation } from "@/lib/simulator";
 
 interface SimulationDashboardProps {
@@ -16,6 +18,7 @@ const SimulationDashboard = ({ isRunning }: SimulationDashboardProps) => {
   const [progress, setProgress] = useState(0);
   const [simulationResults, setSimulationResults] = useState<any>(null);
   const [simulationStep, setSimulationStep] = useState("initializing");
+  const [viewMode, setViewMode] = useState<"charts" | "analysis">("charts");
 
   useEffect(() => {
     if (isRunning) {
@@ -92,47 +95,154 @@ const SimulationDashboard = ({ isRunning }: SimulationDashboardProps) => {
       )}
 
       {simulationResults && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Resource Utilization</CardTitle>
-              <CardDescription>CPU and Memory usage across algorithms</CardDescription>
-            </CardHeader>
-            <CardContent className="h-80">
-              <ResourceUtilizationChart data={simulationResults.resourceUtilization} />
-            </CardContent>
-          </Card>
+        <>
+          <div className="mb-6">
+            <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "charts" | "analysis")} className="w-[400px]">
+              <TabsList>
+                <TabsTrigger value="charts">Visualization Charts</TabsTrigger>
+                <TabsTrigger value="analysis">Scientific Analysis</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Scheduling Time</CardTitle>
-              <CardDescription>Time taken to schedule containers</CardDescription>
-            </CardHeader>
-            <CardContent className="h-80">
-              <SchedulingTimeChart data={simulationResults.schedulingTime} />
-            </CardContent>
-          </Card>
+          {viewMode === "charts" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Resource Utilization</CardTitle>
+                  <CardDescription>CPU and Memory usage across algorithms</CardDescription>
+                </CardHeader>
+                <CardContent className="h-80">
+                  <ResourceUtilizationChart data={simulationResults.resourceUtilization} />
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Makespan</CardTitle>
-              <CardDescription>Total task completion time</CardDescription>
-            </CardHeader>
-            <CardContent className="h-80">
-              <MakespanChart data={simulationResults.makespan} />
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Scheduling Time</CardTitle>
+                  <CardDescription>Time taken to schedule containers</CardDescription>
+                </CardHeader>
+                <CardContent className="h-80">
+                  <SchedulingTimeChart data={simulationResults.schedulingTime} />
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Energy Consumption</CardTitle>
-              <CardDescription>Estimated energy usage</CardDescription>
-            </CardHeader>
-            <CardContent className="h-80">
-              <EnergyConsumptionChart data={simulationResults.energyConsumption} />
-            </CardContent>
-          </Card>
-        </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Makespan</CardTitle>
+                  <CardDescription>Total task completion time</CardDescription>
+                </CardHeader>
+                <CardContent className="h-80">
+                  <MakespanChart data={simulationResults.makespan} />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Energy Consumption</CardTitle>
+                  <CardDescription>Estimated energy usage</CardDescription>
+                </CardHeader>
+                <CardContent className="h-80">
+                  <EnergyConsumptionChart data={simulationResults.energyConsumption} />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
+          {viewMode === "analysis" && (
+            <div className="space-y-8">
+              <ScientificAnalysis simulationResults={simulationResults} />
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Raw Data Summary</CardTitle>
+                  <CardDescription>Key performance indicators for each algorithm</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="bg-gray-100 border-b">
+                          <th className="text-left py-2 px-4">Metric</th>
+                          <th className="text-left py-2 px-4">Bin Packing</th>
+                          <th className="text-left py-2 px-4">DRF</th>
+                          <th className="text-left py-2 px-4">FUSE</th>
+                          <th className="text-left py-2 px-4">FUSE Improvement</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b">
+                          <td className="py-2 px-4">CPU Utilization</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.binPacking.cpuUtilization.toFixed(2)}%</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.drf.cpuUtilization.toFixed(2)}%</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.fuse.cpuUtilization.toFixed(2)}%</td>
+                          <td className="py-2 px-4 text-green-600">
+                            +{((simulationResults.rawData.fuse.cpuUtilization - 
+                                Math.max(simulationResults.rawData.binPacking.cpuUtilization, simulationResults.rawData.drf.cpuUtilization)) / 
+                              Math.max(simulationResults.rawData.binPacking.cpuUtilization, simulationResults.rawData.drf.cpuUtilization) * 100).toFixed(2)}%
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2 px-4">Memory Utilization</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.binPacking.memoryUtilization.toFixed(2)}%</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.drf.memoryUtilization.toFixed(2)}%</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.fuse.memoryUtilization.toFixed(2)}%</td>
+                          <td className="py-2 px-4 text-green-600">
+                            +{((simulationResults.rawData.fuse.memoryUtilization - 
+                                Math.max(simulationResults.rawData.binPacking.memoryUtilization, simulationResults.rawData.drf.memoryUtilization)) / 
+                              Math.max(simulationResults.rawData.binPacking.memoryUtilization, simulationResults.rawData.drf.memoryUtilization) * 100).toFixed(2)}%
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2 px-4">Scheduling Time</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.binPacking.schedulingTime.toFixed(2)} ms</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.drf.schedulingTime.toFixed(2)} ms</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.fuse.schedulingTime.toFixed(2)} ms</td>
+                          <td className="py-2 px-4 text-green-600">
+                            {((1 - simulationResults.rawData.fuse.schedulingTime / 
+                              Math.min(simulationResults.rawData.binPacking.schedulingTime, simulationResults.rawData.drf.schedulingTime)) * 100).toFixed(2)}% faster
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2 px-4">Energy Consumption</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.binPacking.energy.toFixed(2)} W</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.drf.energy.toFixed(2)} W</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.fuse.energy.toFixed(2)} W</td>
+                          <td className="py-2 px-4 text-green-600">
+                            {((1 - simulationResults.rawData.fuse.energy / 
+                              Math.min(simulationResults.rawData.binPacking.energy, simulationResults.rawData.drf.energy)) * 100).toFixed(2)}% less
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2 px-4">Makespan</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.binPacking.makespan.toFixed(2)} ms</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.drf.makespan.toFixed(2)} ms</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.fuse.makespan.toFixed(2)} ms</td>
+                          <td className="py-2 px-4 text-green-600">
+                            {((1 - simulationResults.rawData.fuse.makespan / 
+                              Math.min(simulationResults.rawData.binPacking.makespan, simulationResults.rawData.drf.makespan)) * 100).toFixed(2)}% faster
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2 px-4">Node Utilization</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.binPacking.nodeCount} nodes</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.drf.nodeCount} nodes</td>
+                          <td className="py-2 px-4">{simulationResults.rawData.fuse.nodeCount} nodes</td>
+                          <td className="py-2 px-4 text-green-600">
+                            {Math.min(simulationResults.rawData.binPacking.nodeCount, simulationResults.rawData.drf.nodeCount) - simulationResults.rawData.fuse.nodeCount > 0 ?
+                              `${Math.min(simulationResults.rawData.binPacking.nodeCount, simulationResults.rawData.drf.nodeCount) - simulationResults.rawData.fuse.nodeCount} fewer nodes` :
+                              "Equivalent"
+                            }
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

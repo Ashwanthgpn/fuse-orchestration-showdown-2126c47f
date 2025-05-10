@@ -25,3 +25,36 @@ export interface SimulationResult {
   makespan: number; // ms
   nodeCount: number;
 }
+
+export interface ScenarioConfig {
+  name: string;
+  containerCount: number;
+  nodeCount: number;
+  cpuDistribution: string;
+  memoryDistribution: string;
+  prioritizationType?: string;
+  heterogeneousNodes?: boolean;
+  nodeFailureRate?: number;
+  containerEvictionRate?: number;
+}
+
+export interface AlgorithmMetrics {
+  resourceUtilization: {
+    cpu: number;
+    memory: number;
+  };
+  schedulingTime: number;
+  makespan: number;
+  energyConsumption: number;
+  scalability: number;
+  fairnessIndex: number;
+}
+
+export interface StatisticalAnalysis {
+  mean: number;
+  median: number;
+  standardDeviation: number;
+  confidenceInterval: [number, number];
+  sampleSize: number;
+  improvementPercent?: number;
+}
