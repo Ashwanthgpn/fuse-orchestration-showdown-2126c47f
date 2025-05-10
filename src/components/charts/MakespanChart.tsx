@@ -27,9 +27,7 @@ const MakespanChart = ({ data }: MakespanChartProps) => {
         <YAxis label={{ value: "Time (s)", angle: -90, position: 'insideLeft' }} />
         <Tooltip />
         <Legend />
-        <ReferenceLine y={getMaxValue() * 0.7} stroke="red" strokeDasharray="3 3">
-          <label position="right">Target</label>
-        </ReferenceLine>
+        <ReferenceLine y={getMaxValue() * 0.7} stroke="red" strokeDasharray="3 3" label="Target" />
         <Bar name="Bin Packing" dataKey="binPacking" fill="#8884d8" />
         <Bar name="DRF" dataKey="drf" fill="#82ca9d" />
         <Bar name="FUSE" dataKey="fuse" fill="#ffc658" />
