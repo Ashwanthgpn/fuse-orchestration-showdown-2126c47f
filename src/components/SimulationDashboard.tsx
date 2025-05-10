@@ -21,11 +21,24 @@ const SimulationDashboard = ({ isRunning }: SimulationDashboardProps) => {
   const [simulationStep, setSimulationStep] = useState("initializing");
   const [viewMode, setViewMode] = useState<"charts" | "analysis">("charts");
 
+  // Run the simulation immediately when dashboard mounts to show some results
+  useEffect(() => {
+    if (!simulationResults) {
+      try {
+        const initialResults = runSimulation();
+        setSimulationResults(initialResults);
+        console.log("Initial simulation results loaded:", initialResults);
+      } catch (error) {
+        console.error("Error loading initial results:", error);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (isRunning) {
       let currentProgress = 0;
       const interval = setInterval(() => {
-        currentProgress += 1;
+        currentProgress += 2; // Make it faster
         setProgress(currentProgress);
 
         // Simulate different steps of the simulation process
@@ -43,6 +56,7 @@ const SimulationDashboard = ({ isRunning }: SimulationDashboardProps) => {
           clearInterval(interval);
           try {
             const results = runSimulation();
+            console.log("New simulation results:", results);
             setSimulationResults(results);
             setSimulationStep("complete");
             toast({
@@ -58,7 +72,7 @@ const SimulationDashboard = ({ isRunning }: SimulationDashboardProps) => {
             });
           }
         }
-      }, 100);
+      }, 50); // Make it faster
       
       return () => {
         clearInterval(interval);
@@ -87,6 +101,9 @@ const SimulationDashboard = ({ isRunning }: SimulationDashboardProps) => {
     }
   };
 
+  // If we have results but we're not running, show them
+  const shouldShowResults = simulationResults !== null;
+
   return (
     <div>
       {isRunning && progress < 100 && (
@@ -101,14 +118,14 @@ const SimulationDashboard = ({ isRunning }: SimulationDashboardProps) => {
         </Card>
       )}
 
-      {(!isRunning && !simulationResults) && (
+      {(!isRunning && !shouldShowResults) && (
         <div className="text-center py-20">
           <h3 className="text-2xl font-medium text-gray-600">Click "Run Simulation" to start</h3>
           <p className="mt-4 text-gray-500">Choose a scenario and run the simulation to see the results</p>
         </div>
       )}
 
-      {simulationResults && (
+      {shouldShowResults && (
         <>
           <div className="mb-6">
             <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "charts" | "analysis")} className="w-[400px]">

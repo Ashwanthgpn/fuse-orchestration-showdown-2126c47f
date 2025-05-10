@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { runSimulation } from "@/lib/simulator";
 import { ScenarioConfig } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [isSimulationRunning, setIsSimulationRunning] = useState(false);
   const [selectedTab, setSelectedTab] = useState("dashboard");
   const [simulationResults, setSimulationResults] = useState<any>(null);
   const [useAdvancedConfig, setUseAdvancedConfig] = useState(false);
+  const { toast } = useToast();
   
   const runSimulationHandler = () => {
     if (isSimulationRunning) {
@@ -23,12 +25,30 @@ const Index = () => {
       return;
     }
     
+    // Start the simulation
     setIsSimulationRunning(true);
-    setTimeout(() => {
+    
+    // Run the simulation directly instead of using setTimeout
+    try {
       const results = runSimulation();
+      console.log("Simulation results:", results); // Debug log
       setSimulationResults(results);
+      setTimeout(() => {
+        setIsSimulationRunning(false);
+        toast({
+          title: "Simulation Complete",
+          description: "Results are ready for analysis",
+        });
+      }, 8000);
+    } catch (error) {
+      console.error("Error running simulation:", error);
       setIsSimulationRunning(false);
-    }, 10000); // Simulate a 10 second run
+      toast({
+        title: "Simulation Error",
+        description: "An error occurred during simulation",
+        variant: "destructive",
+      });
+    }
   };
   
   const handleConfigUpdate = (config: ScenarioConfig) => {

@@ -13,6 +13,8 @@ const MakespanChart = ({ data }: MakespanChartProps) => {
 
   const getMaxValue = () => {
     let max = 0;
+    if (!data || data.length === 0) return max;
+    
     data.forEach(item => {
       const values = [item.binPacking, item.drf, item.fuse];
       const itemMax = Math.max(...values);
@@ -28,6 +30,11 @@ const MakespanChart = ({ data }: MakespanChartProps) => {
     const avgSquareDiff = squareDiffs.reduce((sum, val) => sum + val, 0) / squareDiffs.length;
     return Math.sqrt(avgSquareDiff) * 0.5; // Scale down for better visualization
   };
+
+  // Check if data is available
+  if (!data || data.length === 0) {
+    return <div className="w-full h-full flex items-center justify-center">No data available</div>;
+  }
 
   // Enhanced data with error margins and efficiency metrics
   const enhancedData = data.map(item => {
@@ -82,6 +89,7 @@ const MakespanChart = ({ data }: MakespanChartProps) => {
           <YAxis label={{ value: "Time (s)", angle: -90, position: 'insideLeft' }} />
           <Tooltip 
             formatter={(value, name) => {
+              // Fixed the type checking for the name parameter
               if (typeof name === 'string' && name.includes("Efficiency")) {
                 return [`${value} (higher is better)`, "Efficiency Score"];
               }
