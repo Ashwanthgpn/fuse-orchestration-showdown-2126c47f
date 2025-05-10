@@ -9,6 +9,7 @@ import MakespanChart from "@/components/charts/MakespanChart";
 import EnergyConsumptionChart from "@/components/charts/EnergyConsumptionChart";
 import ScientificAnalysis from "@/components/ScientificAnalysis";
 import { runSimulation } from "@/lib/simulator";
+import { toast } from "@/components/ui/use-toast";
 
 interface SimulationDashboardProps {
   isRunning: boolean;
@@ -40,9 +41,22 @@ const SimulationDashboard = ({ isRunning }: SimulationDashboardProps) => {
 
         if (currentProgress >= 100) {
           clearInterval(interval);
-          const results = runSimulation();
-          setSimulationResults(results);
-          setSimulationStep("complete");
+          try {
+            const results = runSimulation();
+            setSimulationResults(results);
+            setSimulationStep("complete");
+            toast({
+              title: "Simulation Complete",
+              description: "Results are ready for analysis",
+            });
+          } catch (error) {
+            console.error("Simulation error:", error);
+            toast({
+              title: "Simulation Error",
+              description: "An error occurred during simulation",
+              variant: "destructive",
+            });
+          }
         }
       }, 100);
       
