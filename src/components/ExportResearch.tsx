@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Download } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 interface ExportResearchProps {
   simulationResults: any;
@@ -52,6 +54,31 @@ const ExportResearch = ({ simulationResults }: ExportResearchProps) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    toast({
+      title: "Export Successful",
+      description: `${filename} has been downloaded to your device.`,
+    });
+  };
+
+  // Function to download all charts as a PDF
+  const handleDownloadAllCharts = () => {
+    toast({
+      title: "Charts Download",
+      description: "Please use the download buttons on individual charts to save them.",
+    });
+    
+    // Scroll to the charts section
+    const dashboardTab = document.querySelector('[value="dashboard"]');
+    if (dashboardTab) {
+      (dashboardTab as HTMLElement).click();
+      setTimeout(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }, 100);
+    }
   };
 
   const convertToCSV = (data: any) => {
@@ -176,8 +203,17 @@ const ExportResearch = ({ simulationResults }: ExportResearchProps) => {
           </p>
         </div>
       </CardContent>
-      <CardFooter className="border-t bg-gray-50">
-        <Button onClick={handleExport} className="ml-auto">
+      <CardFooter className="border-t bg-gray-50 flex justify-between">
+        <Button 
+          variant="outline"
+          onClick={handleDownloadAllCharts}
+          className="flex items-center gap-1"
+        >
+          <Download className="h-4 w-4" />
+          View Charts
+        </Button>
+        <Button onClick={handleExport} className="flex items-center gap-1">
+          <Download className="h-4 w-4" />
           Export Research Data
         </Button>
       </CardFooter>
