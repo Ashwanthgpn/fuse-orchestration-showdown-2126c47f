@@ -82,7 +82,7 @@ const MakespanChart = ({ data }: MakespanChartProps) => {
           <YAxis label={{ value: "Time (s)", angle: -90, position: 'insideLeft' }} />
           <Tooltip 
             formatter={(value, name) => {
-              if (name.includes("Efficiency")) {
+              if (typeof name === 'string' && name.includes("Efficiency")) {
                 return [`${value} (higher is better)`, "Efficiency Score"];
               }
               return [value, name];
